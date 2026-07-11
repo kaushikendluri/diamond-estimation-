@@ -32,7 +32,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Diamond, DiamondStatus } from "@/types/diamond";
 import { useDetection } from "./detection-context";
-import { exportDiamondsCsv, exportDiamondsExcel, exportDiamondsPdf } from "@/lib/export";
+import { exportDiamondsCsv } from "@/lib/export";
 import { cn } from "@/lib/utils";
 
 type SortKey = "id" | "confidence" | "width" | "height" | "area" | "x" | "y";
@@ -158,11 +158,17 @@ export function DiamondTable() {
               <DropdownMenuItem onClick={() => exportDiamondsCsv(filtered, `${result.fileName}-diamonds.csv`)}>
                 <FileJson className="h-4 w-4" /> Export CSV
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => exportDiamondsExcel(filtered, `${result.fileName}-diamonds.xlsx`)}>
+              <DropdownMenuItem
+                onClick={async () => {
+                  const { exportDiamondsExcel } = await import("@/lib/export-excel");
+                  exportDiamondsExcel(filtered, `${result.fileName}-diamonds.xlsx`);
+                }}
+              >
                 <FileSpreadsheet className="h-4 w-4" /> Export Excel
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() =>
+                onClick={async () => {
+                  const { exportDiamondsPdf } = await import("@/lib/export-pdf");
                   exportDiamondsPdf(
                     filtered,
                     {
@@ -171,8 +177,8 @@ export function DiamondTable() {
                       accuracy: result.detectionAccuracy,
                     },
                     `${result.fileName}-diamonds.pdf`
-                  )
-                }
+                  );
+                }}
               >
                 <FileText className="h-4 w-4" /> Export PDF
               </DropdownMenuItem>

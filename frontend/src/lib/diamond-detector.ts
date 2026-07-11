@@ -27,7 +27,7 @@ import { Diamond, DiamondStatus } from "@/types/diamond";
 const WORKING_MAX_DIM = 900;
 const MIN_PEAK_DISTANCE_FACTORS = [1, 0.7, 0.5];
 const MIN_PEAKS_TARGET = 10;
-const MAX_PEAKS_TARGET = 400;
+const MAX_PEAKS_TARGET = 320;
 
 function statusForConfidence(confidence: number): DiamondStatus {
   if (confidence >= 0.9) return "verified";
@@ -81,7 +81,13 @@ function localContrastNormalize(gray: Float32Array, width: number, height: numbe
   }
 
   const out = new Float32Array(gray.length);
-  const rangeFloor = 24;
+  // A plain tile (chain, clasp, backdrop) still has *some* faint sheen or
+  // lighting gradient across it. A low floor amplifies that subtle range up
+  // to full contrast, so the tile reads as "locally bright" and produces
+  // false-positive boxes on things that aren't diamonds at all. Raising the
+  // floor means only tiles with real, substantial brightness variation
+  // (an actual cluster of facets) get stretched.
+  const rangeFloor = 42;
 
   for (let y = 0; y < height; y++) {
     const fy = y / tileSize - 0.5;
@@ -427,8 +433,8 @@ export async function detectDiamondsFromImage(
   // un-stretched brightness to also clear an absolute floor screens those
   // out: real facet highlights are genuinely bright in absolute terms, a
   // dark backdrop's lighting gradient is not.
-  const threshold = otsuThreshold(gray);
-  const absoluteFloor = Math.max(48, otsuThreshold(rawGray) * 0.7);
+  const threshold = otsuThreshold(gray) + 10;
+  const absoluteFloor = Math.max(65, otsuThreshold(rawGray) * 0.92);
   let mask = new Uint8Array(gray.length);
   for (let i = 0; i < gray.length; i++) mask[i] = gray[i] >= threshold && rawGray[i] >= absoluteFloor ? 1 : 0;
   mask = morph(morph(mask, workW, workH, 1, "erode"), workW, workH, 1, "dilate"); // open
@@ -461,7 +467,7 @@ export async function detectDiamondsFromImage(
   const labels = watershedLabel(peaks, mask, workW, workH, maxGrowthRadius);
   const regions = extractRegions(labels, gray, workW, workH, peaks.length);
 
-  const minArea = Math.max(2, workW * workH * 0.00003);
+  const minArea = Math.max(3, workW * workH * 0.00006);
   const maxArea = workW * workH * 0.01;
   const maxAspect = 5;
 
