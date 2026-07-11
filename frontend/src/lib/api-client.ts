@@ -2,19 +2,24 @@ import axios from "axios";
 import { useSettingsStore } from "@/store/settings-store";
 
 /**
- * Shared axios instance for the real backend. The app currently runs against
- * `detection-service.ts`'s mock engine (no backend exists yet) — this client
- * is wired up so flipping `NEXT_PUBLIC_USE_MOCK=false` and pointing
- * `apiEndpoint` (Settings page) at a live API is the only change required.
+ * Shared axios instance for the real backend — the FastAPI service in
+ * `diamond_estimation/diamond_estimation/api.py` (CLAHE -> watershed ->
+ * classifier). Flip `NEXT_PUBLIC_USE_MOCK=false` and point `apiEndpoint`
+ * (Settings page) at that service's URL to use it instead of the client-side
+ * JS approximation.
  *
- * Expected contract:
- *   POST {apiEndpoint}/upload            -> { imageUrl, imageWidth, imageHeight }
- *   POST {apiEndpoint}/detect            -> DetectionResult
- *   GET  {apiEndpoint}/history           -> HistoryItem[]
- *   GET  {apiEndpoint}/analytics         -> AnalyticsData
+ * Contract:
+ *   POST {apiEndpoint}/detect (multipart "image" field) -> DetectionResult
+ *     minus originalImageUrl/processedImageUrl, which the frontend fills in
+ *     itself from a local object URL — the backend is stateless and has
+ *     nowhere to host the image for a follow-up GET.
+ *
+ * Long timeout: a free-tier Render instance spins down when idle and can
+ * take 30-60s to wake on the first request after a while, on top of the
+ * classical CV pipeline's own few-second processing time.
  */
 export const apiClient = axios.create({
-  timeout: 30_000,
+  timeout: 90_000,
 });
 
 apiClient.interceptors.request.use((config) => {

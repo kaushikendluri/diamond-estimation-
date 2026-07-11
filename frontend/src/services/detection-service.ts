@@ -50,28 +50,37 @@ async function runMockDetection(file: File, onStage?: StageCallback): Promise<De
 
 async function runRealDetection(file: File, onStage?: StageCallback): Promise<DetectionResult> {
   onStage?.("uploading", 10);
+  const imageUrl = URL.createObjectURL(file);
+
   const formData = new FormData();
   formData.append("image", file);
 
-  const uploadRes = await apiClient.post("/upload", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-    onUploadProgress: (evt) => {
-      const pct = evt.total ? (evt.loaded / evt.total) * 20 : 10;
-      onStage?.("uploading", pct);
-    },
-  });
+  onStage?.("loading-model", 20);
 
-  onStage?.("loading-model", 25);
-  onStage?.("detecting", 45);
-  const detectRes = await apiClient.post<DetectionResult>("/detect", {
-    imageId: uploadRes.data.imageId,
-  });
+  // The backend runs its full CLAHE -> watershed -> classifier pass inside
+  // this one call (no separate upload step — it's stateless), so the
+  // in-between stages are cosmetic progress rather than real checkpoints.
+  const stagePing = setInterval(() => onStage?.("detecting", 45 + Math.random() * 30), 350);
+  let detectRes: { data: Omit<DetectionResult, "originalImageUrl" | "processedImageUrl"> };
+  try {
+    detectRes = await apiClient.post("/detect", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  } finally {
+    clearInterval(stagePing);
+  }
 
-  onStage?.("measuring", 85);
-  onStage?.("reporting", 95);
+  onStage?.("measuring", 90);
+  onStage?.("reporting", 96);
+
+  const result: DetectionResult = {
+    ...detectRes.data,
+    originalImageUrl: imageUrl,
+    processedImageUrl: imageUrl,
+  };
+
   onStage?.("done", 100);
-
-  return detectRes.data;
+  return result;
 }
 
 export async function uploadAndDetect(

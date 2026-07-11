@@ -10,4 +10,21 @@ services:
     healthCheckPath: /
     envVars:
       - key: NEXT_PUBLIC_USE_MOCK
-        value: "true"
+        value: "false"
+      - key: NEXT_PUBLIC_API_URL
+        value: https://diamond-estimation-api.onrender.com
+
+  - type: web
+    name: diamond-estimation-api
+    runtime: python
+    rootDir: diamond_estimation/diamond_estimation
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements-api.txt
+    startCommand: uvicorn api:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: CORS_ORIGINS
+        value: https://diamond-estimation-frontend.onrender.com,http://localhost:3000

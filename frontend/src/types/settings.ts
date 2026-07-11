@@ -12,7 +12,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   confidenceThreshold: 0.75,
   modelVersion: "DiamondNet v3.2 (Watershed+CNN)",
   defaultResolution: "1920x1080",
-  apiEndpoint: "https://api.lumina-ai.com/v1",
+  apiEndpoint: process.env.NEXT_PUBLIC_API_URL || "https://api.lumina-ai.com/v1",
   notificationsEnabled: true,
   language: "en",
   theme: "dark",
