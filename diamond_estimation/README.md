@@ -13,7 +13,8 @@ a normal Python project for VSCode, plus a real interactive box-draw
 
 ```
 diamond_estimation/
-├── main.py                 # CLI entry point — run this
+├── main.py                 # CLI entry point
+├── api.py                  # FastAPI service — same pipeline, for the web frontend
 ├── requirements.txt
 ├── README.md
 └── src/
@@ -72,6 +73,30 @@ when you're finished. You'll get a separate count for every box.
 ```bash
 python main.py path/to/necklace.jpg --no-display
 ```
+
+## Running as an API (for the web frontend)
+
+Same detection pipeline (`preprocessing` → `segmentation` →
+`classifier`), exposed over HTTP instead of the CLI/matplotlib flow,
+for the Next.js frontend in `../frontend`:
+
+```bash
+uvicorn api:app --reload --port 8000
+```
+
+- `GET /health` — health check
+- `POST /detect` — multipart form, field name `image`; returns total
+  count, per-stone measurements/confidence/cut type, and processing
+  time (see `frontend/src/types/diamond.ts`'s `DetectionResult` for
+  the exact shape)
+
+Since there's no trained model behind this pipeline, `/detect`
+synthesizes a confidence score per stone from how far its mean
+brightness sits above the same Otsu cutoff used to threshold the
+image — not a learned probability, just a proxy signal.
+
+Set `CORS_ORIGINS` (comma-separated) to whatever origin(s) the
+frontend is served from; defaults to `http://localhost:3000`.
 
 ## Tuning detection
 
