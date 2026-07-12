@@ -4,19 +4,19 @@ Upload a jewelry photo, get every diamond detected and measured, and
 draw a box over any section to count just that region. Two parts:
 
 ```
-diamond_estimation/     Python detection pipeline + FastAPI backend
-frontend/                Next.js app (dashboard, upload, analytics, history)
-render.yaml              Render Blueprint — deploys both services together
+backend/       Python detection pipeline + FastAPI backend
+frontend/      Next.js app (dashboard, upload, analytics, history)
+render.yaml    Render Blueprint — deploys both services together
 ```
 
 ## How it fits together
 
-- **Backend** (`diamond_estimation/`) runs a classical computer-vision
+- **Backend** (`backend/`) runs a classical computer-vision
   pipeline — CLAHE contrast, Otsu threshold, distance-transform
   watershed, per-stone classification — exposed as a FastAPI service
   (`api.py`, `POST /detect`). See
-  [`diamond_estimation/README.md`](diamond_estimation/README.md) for
-  the CLI tool this was built from and how to tune detection.
+  [`backend/README.md`](backend/README.md) for the CLI tool this was
+  built from and how to tune detection.
 - **Frontend** (`frontend/`) is a Next.js app that uploads an image to
   that backend and renders the results — bounding boxes, per-stone
   table, region selection, analytics, history. It can also run in
@@ -28,7 +28,7 @@ render.yaml              Render Blueprint — deploys both services together
 
 **Backend:**
 ```bash
-cd diamond_estimation
+cd backend
 python -m venv myenv
 myenv\Scripts\activate        # Windows
 pip install -r requirements.txt

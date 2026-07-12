@@ -3,7 +3,7 @@ import { useSettingsStore } from "@/store/settings-store";
 
 /**
  * Shared axios instance for the real backend — the FastAPI service in
- * `diamond_estimation/diamond_estimation/api.py` (CLAHE -> watershed ->
+ * `backend/api.py` (CLAHE -> watershed ->
  * classifier). Flip `NEXT_PUBLIC_USE_MOCK=false` and point `apiEndpoint`
  * (Settings page) at that service's URL to use it instead of the client-side
  * JS approximation.

@@ -17,7 +17,7 @@ services:
   - type: web
     name: diamond-estimation-api
     runtime: python
-    rootDir: diamond_estimation
+    rootDir: backend
     plan: free
     region: oregon
     buildCommand: pip install -r requirements.txt

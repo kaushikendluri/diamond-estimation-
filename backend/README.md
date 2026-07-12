@@ -12,7 +12,7 @@ a normal Python project for VSCode, plus a real interactive box-draw
 ## Project structure
 
 ```
-diamond_estimation/
+backend/
 ├── main.py                 # CLI entry point
 ├── api.py                  # FastAPI service — same pipeline, for the web frontend
 ├── requirements.txt
@@ -28,7 +28,7 @@ diamond_estimation/
 
 ## Setup (VSCode)
 
-1. Open the `diamond_estimation` folder in VSCode.
+1. Open the `backend` folder in VSCode.
 2. Create and activate a virtual environment:
    ```bash
    python -m venv venv
